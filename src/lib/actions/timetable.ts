@@ -59,6 +59,22 @@ export async function saveTimetableEntry(
   }
 }
 
+export async function toggleTimetableLock(id: string): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const entry = await prisma.timetableEntry.findUnique({ where: { id } });
+    if (!entry) return { error: "ไม่พบคาบสอนนี้" };
+    await prisma.timetableEntry.update({
+      where: { id },
+      data: { locked: !entry.locked },
+    });
+    revalidatePath("/timetable");
+    return {};
+  } catch (e) {
+    return toError(e);
+  }
+}
+
 export async function deleteTimetableEntry(id: string): Promise<ActionResult> {
   try {
     await requireAdmin();

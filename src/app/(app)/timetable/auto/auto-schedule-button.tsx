@@ -53,7 +53,7 @@ export function AutoScheduleButton() {
             onClick={() => run("clear")}
           >
             <Eraser className="size-4" />
-            ล้างตารางเดิมทั้งหมด แล้วจัดใหม่
+            ล้างตารางเดิม (ยกเว้นคาบที่ล็อก) แล้วจัดใหม่
           </Button>
           <Button
             variant="outline"

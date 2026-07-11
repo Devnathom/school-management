@@ -5,6 +5,7 @@ import { saveStudent, deleteStudent } from "@/lib/actions/students";
 import { PageHeader } from "@/components/page-header";
 import { EntityFormDialog, type FieldDef } from "@/components/entity-form-dialog";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { ExportMenu } from "@/components/export-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,6 +66,9 @@ export default async function StudentsPage({
         title="ข้อมูลนักเรียน"
         description={`นักเรียน${classFilter ? "ในห้องที่เลือก" : "ทั้งหมด"} ${students.length} คน`}
       >
+        <ExportMenu
+          baseHref={`/api/export/students${classFilter ? `?class=${classFilter}` : ""}`}
+        />
         {isAdmin && (
           <EntityFormDialog
             title="เพิ่มข้อมูลนักเรียน"

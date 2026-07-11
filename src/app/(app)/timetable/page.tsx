@@ -8,6 +8,8 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { EntityFormDialog, type FieldDef } from "@/components/entity-form-dialog";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { ExportMenu } from "@/components/export-menu";
+import { LockToggle } from "./lock-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -19,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DAYS, PERIODS, teacherName } from "@/lib/constants";
-import { Plus, Sparkles } from "lucide-react";
+import { Lock, Plus, Sparkles } from "lucide-react";
 
 export default async function TimetablePage({
   searchParams,
@@ -123,6 +125,9 @@ export default async function TimetablePage({
             : "ยังไม่มีข้อมูล"
         }
       >
+        {selectedId && (
+          <ExportMenu baseHref={`/api/export/timetable?view=${view}&id=${selectedId}`} />
+        )}
         {isAdmin && (
           <Button asChild variant="outline" className="gap-2">
             <Link href="/timetable/auto">
@@ -200,8 +205,19 @@ export default async function TimetablePage({
                     return (
                       <TableCell key={p} className="align-top">
                         {entry ? (
-                          <div className="group relative rounded-md border bg-primary/5 p-2 text-xs">
-                            <p className="font-semibold">{entry.subject.code}</p>
+                          <div
+                            className={`group relative rounded-md border p-2 text-xs ${
+                              entry.locked
+                                ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
+                                : "bg-primary/5"
+                            }`}
+                          >
+                            <p className="flex items-center gap-1 font-semibold">
+                              {entry.locked && (
+                                <Lock className="size-3 shrink-0 text-amber-600" />
+                              )}
+                              {entry.subject.code}
+                            </p>
                             <p className="text-muted-foreground">
                               {entry.subject.name}
                             </p>
@@ -211,7 +227,8 @@ export default async function TimetablePage({
                                 : `ห้อง ${entry.classRoom.name}`}
                             </p>
                             {isAdmin && (
-                              <div className="absolute -right-1 -top-1 opacity-0 transition-opacity group-hover:opacity-100">
+                              <div className="absolute -right-1 -top-1 flex opacity-0 transition-opacity group-hover:opacity-100">
+                                <LockToggle id={entry.id} locked={entry.locked} />
                                 <ConfirmDelete
                                   action={deleteTimetableEntry.bind(null, entry.id)}
                                   itemLabel={`คาบ ${entry.subject.name} (${day.label} คาบ ${p})`}

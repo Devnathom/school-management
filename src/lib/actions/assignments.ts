@@ -96,8 +96,11 @@ export async function autoSchedule(
       };
     }
 
+    // โหมด clear ยังต้องคงคาบที่ล็อกไว้เสมอ
     const fixed =
-      mode === "fill" ? await prisma.timetableEntry.findMany() : [];
+      mode === "fill"
+        ? await prisma.timetableEntry.findMany()
+        : await prisma.timetableEntry.findMany({ where: { locked: true } });
 
     const result = generateSchedule({
       assignments: assignments.map((a) => ({
@@ -111,7 +114,7 @@ export async function autoSchedule(
 
     await prisma.$transaction(async (tx) => {
       if (mode === "clear") {
-        await tx.timetableEntry.deleteMany();
+        await tx.timetableEntry.deleteMany({ where: { locked: false } });
       }
       if (result.placed.length > 0) {
         await tx.timetableEntry.createMany({ data: result.placed });

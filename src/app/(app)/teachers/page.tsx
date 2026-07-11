@@ -4,6 +4,7 @@ import { saveTeacher, deleteTeacher } from "@/lib/actions/teachers";
 import { PageHeader } from "@/components/page-header";
 import { EntityFormDialog, type FieldDef } from "@/components/entity-form-dialog";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { ExportMenu } from "@/components/export-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -50,6 +51,7 @@ export default async function TeachersPage() {
   return (
     <>
       <PageHeader title="ข้อมูลครู" description={`ครูทั้งหมด ${teachers.length} คน`}>
+        <ExportMenu baseHref="/api/export/teachers" />
         {isAdmin && (
           <EntityFormDialog
             title="เพิ่มข้อมูลครู"

@@ -92,6 +92,7 @@ model TimetableEntry {
   teacherId   String
   dayOfWeek   Int // 1-5 = จันทร์-ศุกร์
   period      Int // 1-8
+  locked      Boolean   @default(false) // คาบที่ล็อกไว้ ระบบจัดอัตโนมัติจะไม่ย้าย/ลบ
 
   // กันคาบชนที่ระดับฐานข้อมูล
   @@unique([teacherId, dayOfWeek, period])
