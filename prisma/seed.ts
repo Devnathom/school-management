@@ -98,6 +98,21 @@ async function main() {
   }
   await prisma.timetableEntry.createMany({ data: entries });
 
+  // ---------- มอบหมายการสอน (ใช้กับระบบจัดตารางอัตโนมัติ) ----------
+  // subjects[i] สอนโดย teachers[i]: วิชาหลัก 4 คาบ/สัปดาห์ วิชารอง 2 คาบ/สัปดาห์
+  const assignmentData = [];
+  for (const room of rooms) {
+    for (let i = 0; i < subjects.length; i++) {
+      assignmentData.push({
+        classRoomId: room.id,
+        subjectId: subjects[i].id,
+        teacherId: teachers[i].id,
+        periodsPerWeek: i < 4 ? 4 : 2,
+      });
+    }
+  }
+  await prisma.teachingAssignment.createMany({ data: assignmentData });
+
   // ---------- พัสดุ ----------
   const items = await Promise.all([
     prisma.inventoryItem.create({ data: { code: "MAT-001", name: "กระดาษ A4 80 แกรม", category: "วัสดุสำนักงาน", unit: "รีม", quantity: 0, minStock: 20 } }),

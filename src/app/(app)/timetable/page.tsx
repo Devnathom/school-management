@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DAYS, PERIODS, teacherName } from "@/lib/constants";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 
 export default async function TimetablePage({
   searchParams,
@@ -123,6 +123,13 @@ export default async function TimetablePage({
             : "ยังไม่มีข้อมูล"
         }
       >
+        {isAdmin && (
+          <Button asChild variant="outline" className="gap-2">
+            <Link href="/timetable/auto">
+              <Sparkles className="size-4" /> จัดตารางอัตโนมัติ
+            </Link>
+          </Button>
+        )}
         {isAdmin && (
           <EntityFormDialog
             title="เพิ่มคาบสอน"

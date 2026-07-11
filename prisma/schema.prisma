@@ -19,7 +19,7 @@ model User {
 }
 
 model Teacher {
-  id           String           @id @default(cuid())
+  id           String               @id @default(cuid())
   prefix       String
   firstName    String
   lastName     String
@@ -30,8 +30,9 @@ model Teacher {
   user         User?
   homeroomOf   ClassRoom[]
   timetable    TimetableEntry[]
+  assignments  TeachingAssignment[]
   circularAcks CircularAck[]
-  createdAt    DateTime         @default(now())
+  createdAt    DateTime             @default(now())
 }
 
 model Student {
@@ -49,20 +50,36 @@ model ClassRoom {
   id                String           @id @default(cuid())
   name              String // เช่น "ม.1/1"
   year              String // ปีการศึกษา เช่น "2569"
-  homeroomTeacher   Teacher?         @relation(fields: [homeroomTeacherId], references: [id])
+  homeroomTeacher   Teacher?             @relation(fields: [homeroomTeacherId], references: [id])
   homeroomTeacherId String?
   students          Student[]
   timetable         TimetableEntry[]
+  assignments       TeachingAssignment[]
 
   @@unique([name, year])
 }
 
 model Subject {
-  id         String           @id @default(cuid())
-  code       String           @unique
-  name       String
-  department String?
-  timetable  TimetableEntry[]
+  id          String               @id @default(cuid())
+  code        String               @unique
+  name        String
+  department  String?
+  timetable   TimetableEntry[]
+  assignments TeachingAssignment[]
+}
+
+// มอบหมายการสอน: ใช้เป็นข้อมูลตั้งต้นให้ระบบจัดตารางอัตโนมัติ
+model TeachingAssignment {
+  id             String    @id @default(cuid())
+  classRoom      ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  classRoomId    String
+  subject        Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId      String
+  teacher        Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId      String
+  periodsPerWeek Int // จำนวนคาบต่อสัปดาห์
+
+  @@unique([classRoomId, subjectId])
 }
 
 model TimetableEntry {
