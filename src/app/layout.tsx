@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai } from "next/font/google";
+import { Sarabun } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const notoSansThai = Noto_Sans_Thai({
-  variable: "--font-noto-sans-thai",
+// ฟอนต์สารบรรณ (Sarabun) ใช้ทั้งระบบ ให้เข้าชุดกับเอกสาร PDF ที่ส่งออก
+const sarabun = Sarabun({
+  variable: "--font-sarabun",
   subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -19,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${notoSansThai.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-[family-name:var(--font-noto-sans-thai)]">
+    <html lang="th" className={`${sarabun.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col font-[family-name:var(--font-sarabun)]">
         {children}
         <Toaster richColors position="top-right" />
       </body>

@@ -3,6 +3,9 @@ import ExcelJS from "exceljs";
 const XLSX_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
+// ฟอนต์สารบรรณราชการ (เครื่องที่ไม่มีฟอนต์นี้ Excel จะ fallback ให้เอง)
+const FONT_NAME = "TH Sarabun New";
+
 export type TableData = {
   title: string;
   headers: string[];
@@ -19,14 +22,14 @@ function addTableSheet(wb: ExcelJS.Workbook, sheetName: string, data: TableData)
   ws.mergeCells(1, 1, 1, colCount);
   const titleCell = ws.getCell(1, 1);
   titleCell.value = data.title;
-  titleCell.font = { bold: true, size: 14 };
+  titleCell.font = { bold: true, size: 18, name: FONT_NAME };
   titleCell.alignment = { horizontal: "center" };
 
   const headerRow = ws.getRow(3);
   data.headers.forEach((h, i) => {
     const cell = headerRow.getCell(i + 1);
     cell.value = h;
-    cell.font = { bold: true };
+    cell.font = { bold: true, size: 14, name: FONT_NAME };
     cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
     cell.fill = {
       type: "pattern",
@@ -46,6 +49,7 @@ function addTableSheet(wb: ExcelJS.Workbook, sheetName: string, data: TableData)
     row.forEach((value, c) => {
       const cell = wsRow.getCell(c + 1);
       cell.value = value;
+      cell.font = { size: 14, name: FONT_NAME };
       cell.alignment = { vertical: "top", wrapText: true };
       cell.border = {
         top: { style: "thin" },
