@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ระบบบริหารจัดการโรงเรียน (School Management System)
 
-## Getting Started
+เว็บแอพบริหารงานโรงเรียนสำหรับงานธุรการและวิชาการ พัฒนาด้วย Next.js เวอร์ชันล่าสุด รองรับภาษาไทยทั้งระบบ
 
-First, run the development server:
+## ฟีเจอร์
+
+- **แดชบอร์ด** — สรุปจำนวนครู/นักเรียน/ห้องเรียน หนังสือรับค้างดำเนินการ พัสดุใกล้หมด และจดหมายเวียนล่าสุด
+- **ข้อมูลครู / นักเรียน / ห้องเรียน / รายวิชา** — เพิ่ม แก้ไข ลบ พร้อมกรองนักเรียนตามห้อง
+- **ตารางเรียน / ตารางสอน** — จัดคาบสอน (จันทร์–ศุกร์ × 8 คาบ) ดูได้ทั้งมุมมองรายห้องและรายครู
+  พร้อม**ตรวจคาบชนอัตโนมัติ** (ครูสอนซ้อนคาบ / ห้องเรียนมีวิชาซ้อนคาบ) ทั้งระดับแอพและระดับฐานข้อมูล
+- **งานพัสดุ** — ทะเบียนพัสดุ บันทึกรับเข้า/เบิกจ่าย ยอดคงเหลืออัตโนมัติ แจ้งเตือนต่ำกว่าจุดสั่งซื้อ
+- **งานสารบรรณ**
+  - ทะเบียนหนังสือรับ / หนังสือส่ง — ออกเลขทะเบียนต่อเนื่องภายในปี พ.ศ. ให้อัตโนมัติ
+  - จดหมายเวียน — เวียนถึงครูทุกท่าน ครูกดรับทราบได้ และผู้ดูแลเห็นรายชื่อผู้รับทราบ
+- **ระบบสิทธิ์** — ผู้ดูแลระบบ (ADMIN) จัดการข้อมูลได้ทั้งหมด, ครู (TEACHER) ดูข้อมูล เบิกพัสดุ และกดรับทราบจดหมายเวียน
+
+## เทคโนโลยี
+
+| ส่วน | เทคโนโลยี |
+|---|---|
+| Framework | Next.js 16 (App Router, Server Components, Server Actions) + TypeScript |
+| UI | Tailwind CSS v4 + shadcn/ui |
+| ฐานข้อมูล | SQLite + Prisma ORM 7 (driver adapter better-sqlite3) |
+| Authentication | Auth.js (NextAuth v5) — credentials + role-based access |
+| Validation | Zod |
+
+## การติดตั้ง
+
+ต้องมี Node.js 20 ขึ้นไป
 
 ```bash
+git clone https://github.com/Devnathom/school-management.git
+cd school-management
+npm install
+
+# ตั้งค่า environment
+cp .env.example .env
+
+# สร้างฐานข้อมูล + ข้อมูลตัวอย่าง
+npx prisma migrate dev
+npx prisma db seed
+
+# รันเซิร์ฟเวอร์
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+เปิด http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> หากใช้งานจริง ให้เปลี่ยน `AUTH_SECRET` ใน `.env` เป็นค่าสุ่มใหม่ (สร้างได้ด้วย `npx auth secret`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## บัญชีทดสอบ
 
-## Learn More
+| บทบาท | อีเมล | รหัสผ่าน |
+|---|---|---|
+| ผู้ดูแลระบบ | `admin@school.local` | `admin1234` |
+| ครู | `somchai@school.local` | `teacher1234` |
 
-To learn more about Next.js, take a look at the following resources:
+## โครงสร้างโปรเจกต์
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    login/                  หน้าเข้าสู่ระบบ
+    (app)/                  เลย์เอาต์หลัก (sidebar + ตรวจ session)
+      dashboard/            แดชบอร์ด
+      teachers/ students/ classes/ subjects/
+      timetable/            ตารางเรียน/ตารางสอน
+      inventory/            งานพัสดุ
+      documents/            หนังสือรับ / หนังสือส่ง / จดหมายเวียน
+  components/               คอมโพเนนต์ใช้ร่วม (EntityFormDialog, ConfirmDelete ฯลฯ)
+  lib/
+    actions/                Server Actions + Zod schema แยกตามโมดูล
+    auth.ts guard.ts prisma.ts
+prisma/
+  schema.prisma seed.ts
+```

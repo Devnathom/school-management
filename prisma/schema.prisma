@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// role: ADMIN | TEACHER (SQLite ไม่รองรับ enum)
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("TEACHER")
+  teacher      Teacher? @relation(fields: [teacherId], references: [id])
+  teacherId    String?  @unique
+  createdAt    DateTime @default(now())
+}
+
+model Teacher {
+  id           String           @id @default(cuid())
+  prefix       String
+  firstName    String
+  lastName     String
+  position     String?
+  department   String?
+  phone        String?
+  email        String?
+  user         User?
+  homeroomOf   ClassRoom[]
+  timetable    TimetableEntry[]
+  circularAcks CircularAck[]
+  createdAt    DateTime         @default(now())
+}
+
+model Student {
+  id          String     @id @default(cuid())
+  studentCode String     @unique
+  prefix      String
+  firstName   String
+  lastName    String
+  classRoom   ClassRoom? @relation(fields: [classRoomId], references: [id])
+  classRoomId String?
+  createdAt   DateTime   @default(now())
+}
+
+model ClassRoom {
+  id                String           @id @default(cuid())
+  name              String // เช่น "ม.1/1"
+  year              String // ปีการศึกษา เช่น "2569"
+  homeroomTeacher   Teacher?         @relation(fields: [homeroomTeacherId], references: [id])
+  homeroomTeacherId String?
+  students          Student[]
+  timetable         TimetableEntry[]
+
+  @@unique([name, year])
+}
+
+model Subject {
+  id         String           @id @default(cuid())
+  code       String           @unique
+  name       String
+  department String?
+  timetable  TimetableEntry[]
+}
+
+model TimetableEntry {
+  id          String    @id @default(cuid())
+  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  classRoomId String
+  subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId   String
+  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   String
+  dayOfWeek   Int // 1-5 = จันทร์-ศุกร์
+  period      Int // 1-8
+
+  // กันคาบชนที่ระดับฐานข้อมูล
+  @@unique([teacherId, dayOfWeek, period])
+  @@unique([classRoomId, dayOfWeek, period])
+}
+
+model InventoryItem {
+  id           String                 @id @default(cuid())
+  code         String                 @unique
+  name         String
+  category     String?
+  unit         String // หน่วยนับ เช่น ชิ้น, กล่อง, รีม
+  quantity     Int                    @default(0)
+  minStock     Int                    @default(0)
+  transactions InventoryTransaction[]
+  createdAt    DateTime               @default(now())
+}
+
+// type: IN (รับเข้า) | OUT (เบิกจ่าย)
+model InventoryTransaction {
+  id        String        @id @default(cuid())
+  item      InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  type      String
+  quantity  Int
+  requester String? // ผู้เบิก/ผู้ส่งมอบ
+  note      String?
+  date      DateTime      @default(now())
+}
+
+// status: PENDING (รอดำเนินการ) | DONE (เสร็จสิ้น)
+model IncomingDocument {
+  id         String   @id @default(cuid())
+  regNo      Int // เลขทะเบียนรับ (run ต่อปี)
+  year       Int // ปี พ.ศ.
+  docNo      String // ที่หนังสือ
+  docDate    DateTime // ลงวันที่
+  fromOrg    String // จากหน่วยงาน
+  subject    String // เรื่อง
+  action     String? // การปฏิบัติ
+  status     String   @default("PENDING")
+  receivedAt DateTime @default(now())
+
+  @@unique([year, regNo])
+}
+
+model OutgoingDocument {
+  id      String   @id @default(cuid())
+  regNo   Int // เลขที่หนังสือส่ง (run ต่อปี)
+  year    Int // ปี พ.ศ.
+  toOrg   String // ถึงหน่วยงาน
+  subject String // เรื่อง
+  docDate DateTime @default(now())
+  note    String?
+
+  @@unique([year, regNo])
+}
+
+model Circular {
+  id        String        @id @default(cuid())
+  title     String
+  body      String
+  createdAt DateTime      @default(now())
+  acks      CircularAck[]
+}
+
+model CircularAck {
+  id             String   @id @default(cuid())
+  circular       Circular @relation(fields: [circularId], references: [id], onDelete: Cascade)
+  circularId     String
+  teacher        Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId      String
+  acknowledgedAt DateTime @default(now())
+
+  @@unique([circularId, teacherId])
+}
