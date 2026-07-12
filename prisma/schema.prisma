@@ -68,6 +68,19 @@ model Subject {
   assignments TeachingAssignment[]
 }
 
+// ค่าตั้งระบบแบบ key-value เช่น เลขเริ่มต้นรหัสนักเรียน
+model AppSetting {
+  key   String @id
+  value String
+}
+
+// เวลาเริ่ม-จบของแต่ละคาบ (คาบ 1-8)
+model PeriodTime {
+  period    Int    @id
+  startTime String // เช่น "08:30"
+  endTime   String // เช่น "09:20"
+}
+
 // มอบหมายการสอน: ใช้เป็นข้อมูลตั้งต้นให้ระบบจัดตารางอัตโนมัติ
 model TeachingAssignment {
   id             String    @id @default(cuid())

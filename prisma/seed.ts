@@ -171,6 +171,23 @@ async function main() {
     data: { circularId: circular.id, teacherId: teachers[1].id },
   });
 
+  // ---------- ค่าตั้งระบบ + เวลาเรียน ----------
+  await prisma.appSetting.create({
+    data: { key: "student_code_start", value: "10001" },
+  });
+  await prisma.periodTime.createMany({
+    data: [
+      { period: 1, startTime: "08:30", endTime: "09:20" },
+      { period: 2, startTime: "09:20", endTime: "10:10" },
+      { period: 3, startTime: "10:10", endTime: "11:00" },
+      { period: 4, startTime: "11:00", endTime: "11:50" },
+      { period: 5, startTime: "13:00", endTime: "13:50" },
+      { period: 6, startTime: "13:50", endTime: "14:40" },
+      { period: 7, startTime: "14:40", endTime: "15:30" },
+      { period: 8, startTime: "15:30", endTime: "16:20" },
+    ],
+  });
+
   console.log("Seed เสร็จสิ้น: ครู 8, นักเรียน 24, ห้องเรียน 3, วิชา 8, ตาราง 40 คาบ");
 }
 

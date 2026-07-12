@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { xlsxResponse, type TableData } from "@/lib/export/excel";
 import { pdfResponse } from "@/lib/export/pdf";
-import { DAYS, PERIODS, teacherName } from "@/lib/constants";
+import { DAYS, PERIODS, mergePeriodTimes, teacherName } from "@/lib/constants";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -35,9 +35,16 @@ export async function GET(request: Request) {
   const byCell = new Map<string, (typeof entries)[number]>();
   for (const e of entries) byCell.set(`${e.dayOfWeek}-${e.period}`, e);
 
+  const periodTimes = mergePeriodTimes(
+    await prisma.periodTime.findMany({ orderBy: { period: "asc" } })
+  );
+
   const data: TableData = {
     title,
-    headers: ["วัน", ...PERIODS.map((p) => `คาบ ${p}`)],
+    headers: [
+      "วัน",
+      ...periodTimes.map((t) => `คาบ ${t.period}\n${t.startTime}–${t.endTime}`),
+    ],
     rows: DAYS.map((day) => [
       day.label,
       ...PERIODS.map((p) => {

@@ -4,10 +4,11 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/guard";
+import { nextStudentCode } from "./settings";
 import { toError, type ActionResult } from "./types";
 
 const studentSchema = z.object({
-  studentCode: z.string().min(1, "กรุณาระบุรหัสนักเรียน"),
+  studentCode: z.string().optional(), // เว้นว่างได้ ระบบจะออกรหัสให้อัตโนมัติ
   prefix: z.string().min(1, "กรุณาระบุคำนำหน้า"),
   firstName: z.string().min(1, "กรุณาระบุชื่อ"),
   lastName: z.string().min(1, "กรุณาระบุนามสกุล"),
@@ -23,13 +24,28 @@ export async function saveStudent(
     const parsed = studentSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-    const { classRoomId, ...rest } = parsed.data;
-    const data = { ...rest, classRoomId: classRoomId || null };
+    const { classRoomId, studentCode, ...rest } = parsed.data;
+    const code = studentCode?.trim() ?? "";
 
     if (id) {
-      await prisma.student.update({ where: { id }, data });
+      // แก้ไข: ถ้าเว้นว่างรหัสไว้ ให้คงรหัสเดิม
+      await prisma.student.update({
+        where: { id },
+        data: {
+          ...rest,
+          classRoomId: classRoomId || null,
+          ...(code ? { studentCode: code } : {}),
+        },
+      });
     } else {
-      await prisma.student.create({ data });
+      // เพิ่มใหม่: ถ้าเว้นว่าง ระบบออกรหัสให้อัตโนมัติ
+      await prisma.student.create({
+        data: {
+          ...rest,
+          classRoomId: classRoomId || null,
+          studentCode: code || (await nextStudentCode()),
+        },
+      });
     }
     revalidatePath("/students");
     return {};

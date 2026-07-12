@@ -10,6 +10,7 @@ import {
   School,
   BookOpen,
   CalendarDays,
+  ChevronsUp,
   Package,
   Inbox,
   Send,
@@ -28,6 +29,7 @@ const groups = [
       { href: "/students", label: "ข้อมูลนักเรียน", icon: GraduationCap },
       { href: "/classes", label: "ห้องเรียน", icon: School },
       { href: "/subjects", label: "รายวิชา", icon: BookOpen },
+      { href: "/promotion", label: "เลื่อนชั้นเรียน", icon: ChevronsUp },
     ],
   },
   {

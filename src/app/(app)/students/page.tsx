@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/guard";
 import { saveStudent, deleteStudent } from "@/lib/actions/students";
+import { nextStudentCode, saveStudentCodeStart } from "@/lib/actions/settings";
 import { PageHeader } from "@/components/page-header";
 import { EntityFormDialog, type FieldDef } from "@/components/entity-form-dialog";
 import { ConfirmDelete } from "@/components/confirm-delete";
@@ -18,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { STUDENT_PREFIXES } from "@/lib/constants";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, Settings2 } from "lucide-react";
 
 export default async function StudentsPage({
   searchParams,
@@ -29,17 +30,22 @@ export default async function StudentsPage({
   const session = await requireSession();
   const isAdmin = session.user.role === "ADMIN";
 
-  const [students, classes] = await Promise.all([
+  const [students, classes, nextCode] = await Promise.all([
     prisma.student.findMany({
       where: classFilter ? { classRoomId: classFilter } : undefined,
       include: { classRoom: true },
       orderBy: { studentCode: "asc" },
     }),
     prisma.classRoom.findMany({ orderBy: [{ year: "desc" }, { name: "asc" }] }),
+    nextStudentCode(),
   ]);
 
   const fields: FieldDef[] = [
-    { name: "studentCode", label: "รหัสนักเรียน", required: true },
+    {
+      name: "studentCode",
+      label: "รหัสนักเรียน",
+      placeholder: `เว้นว่าง = ออกรหัสอัตโนมัติ (ถัดไป: ${nextCode})`,
+    },
     {
       name: "prefix",
       label: "คำนำหน้า",
@@ -71,7 +77,29 @@ export default async function StudentsPage({
         />
         {isAdmin && (
           <EntityFormDialog
+            title="ตั้งค่ารหัสนักเรียนอัตโนมัติ"
+            description={`รหัสถัดไปที่ระบบจะออกให้: ${nextCode} (ระบบใช้ค่าที่มากกว่าระหว่างเลขเริ่มต้นกับรหัสสูงสุดที่มี + 1)`}
+            fields={[
+              {
+                name: "startCode",
+                label: "เริ่มรหัสนักเรียนที่",
+                type: "number",
+                required: true,
+              },
+            ]}
+            action={saveStudentCodeStart}
+            defaultValues={{ startCode: nextCode }}
+            trigger={
+              <Button variant="outline" className="gap-2">
+                <Settings2 className="size-4" /> ตั้งค่ารหัส
+              </Button>
+            }
+          />
+        )}
+        {isAdmin && (
+          <EntityFormDialog
             title="เพิ่มข้อมูลนักเรียน"
+            description={`เว้นว่างช่องรหัส ระบบจะออกรหัส ${nextCode} ให้อัตโนมัติ`}
             fields={fields}
             action={saveStudent.bind(null, null)}
             trigger={

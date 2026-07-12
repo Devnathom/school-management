@@ -10,6 +10,7 @@ import { EntityFormDialog, type FieldDef } from "@/components/entity-form-dialog
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { ExportMenu } from "@/components/export-menu";
 import { LockToggle } from "./lock-toggle";
+import { PeriodTimesDialog } from "./period-times-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -20,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DAYS, PERIODS, teacherName } from "@/lib/constants";
+import { DAYS, PERIODS, mergePeriodTimes, teacherName } from "@/lib/constants";
 import { Lock, Plus, Sparkles } from "lucide-react";
 
 export default async function TimetablePage({
@@ -32,11 +33,13 @@ export default async function TimetablePage({
   const session = await requireSession();
   const isAdmin = session.user.role === "ADMIN";
 
-  const [classes, teachers, subjects] = await Promise.all([
+  const [classes, teachers, subjects, periodTimesDb] = await Promise.all([
     prisma.classRoom.findMany({ orderBy: [{ year: "desc" }, { name: "asc" }] }),
     prisma.teacher.findMany({ orderBy: { firstName: "asc" } }),
     prisma.subject.findMany({ orderBy: { code: "asc" } }),
+    prisma.periodTime.findMany({ orderBy: { period: "asc" } }),
   ]);
+  const periodTimes = mergePeriodTimes(periodTimesDb);
 
   // ค่าเริ่มต้น: ครูเห็นตารางสอนตนเอง, admin เห็นตารางเรียนห้องแรก
   let view = params.view === "teacher" ? "teacher" : params.view === "class" ? "class" : null;
@@ -128,6 +131,7 @@ export default async function TimetablePage({
         {selectedId && (
           <ExportMenu baseHref={`/api/export/timetable?view=${view}&id=${selectedId}`} />
         )}
+        {isAdmin && <PeriodTimesDialog times={periodTimes} />}
         {isAdmin && (
           <Button asChild variant="outline" className="gap-2">
             <Link href="/timetable/auto">
@@ -189,9 +193,12 @@ export default async function TimetablePage({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-24">วัน</TableHead>
-                {PERIODS.map((p) => (
-                  <TableHead key={p} className="text-center">
-                    คาบ {p}
+                {periodTimes.map((t) => (
+                  <TableHead key={t.period} className="text-center">
+                    <div>คาบ {t.period}</div>
+                    <div className="text-xs font-normal text-muted-foreground">
+                      {t.startTime}–{t.endTime}
+                    </div>
                   </TableHead>
                 ))}
               </TableRow>
