@@ -26,23 +26,27 @@
 |---|---|
 | Framework | Next.js 16 (App Router, Server Components, Server Actions) + TypeScript |
 | UI | Tailwind CSS v4 + shadcn/ui |
-| ฐานข้อมูล | SQLite + Prisma ORM 7 (driver adapter better-sqlite3) |
+| ฐานข้อมูล | PostgreSQL + Prisma ORM 7 (driver adapter pg) |
+| PWA | ติดตั้งบนมือถือ/เดสก์ท็อปได้ (manifest + service worker + หน้า offline) |
 | Authentication | Auth.js (NextAuth v5) — credentials + role-based access |
 | Validation | Zod |
 
 ## การติดตั้ง
 
-ต้องมี Node.js 20 ขึ้นไป
+ต้องมี Node.js 20 ขึ้นไป และ PostgreSQL 14 ขึ้นไป
 
 ```bash
 git clone https://github.com/Devnathom/school-management.git
 cd school-management
 npm install
 
-# ตั้งค่า environment
+# สร้างฐานข้อมูลใน PostgreSQL
+createdb school_management_app
+
+# ตั้งค่า environment (แก้ DATABASE_URL ให้ตรงกับเครื่องของคุณ)
 cp .env.example .env
 
-# สร้างฐานข้อมูล + ข้อมูลตัวอย่าง
+# สร้างตาราง + ข้อมูลตัวอย่าง
 npx prisma migrate dev
 npx prisma db seed
 

@@ -1,0 +1,16 @@
+"use client";
+
+import { useEffect } from "react";
+
+export function SwRegister() {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .catch(() => {
+          // ลงทะเบียนไม่ได้ (เช่นบางกรณีใน dev) ไม่กระทบการใช้งานปกติ
+        });
+    }
+  }, []);
+  return null;
+}
